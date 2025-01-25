@@ -6,6 +6,8 @@ import java.util.function.Predicate;
 
 public class ArrayListClass<T> implements ArrayListInterface<T> {
 
+    
+
     // Constructs an empty list with an initial capacity of ten.
     public ArrayListClass() {
 
@@ -207,3 +209,5 @@ public class ArrayListClass<T> implements ArrayListInterface<T> {
 
     }
 }
+
+

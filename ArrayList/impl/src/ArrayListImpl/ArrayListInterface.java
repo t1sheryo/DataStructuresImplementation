@@ -43,3 +43,5 @@ public interface ArrayListInterface<T> extends Serializable, Cloneable, Iterable
     <T> T[] toArray(T[] array);
     void trimToSize();
 }
+
+
