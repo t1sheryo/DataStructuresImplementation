@@ -75,38 +75,76 @@ public class ArrayListClass<T> extends AbstractList<T>
     }
 
     // Appends the specified element to the end of this list.
-    public boolean addAll(T element) {
-        return false;
+    public boolean add(T element) {
+        add(size, element);
+        return true;
+    }
+
+    // Appends all of the elements in the specified collection to the end of this list,
+    // in the order that they are returned by the specified collection's Iterator.
+    @Override
+    public boolean addAll(Collection<? extends T> collection) {
+        return addAll(this.size, collection);
     }
 
     // Inserts all of the elements in the specified collection into this list, starting at the specified position.
     @Override
-    public boolean addAll(int index, Collection<? extends T> elements) {
-        return false;
+    public boolean addAll(int index, Collection<? extends T> collection) {
+        if(collection == null) {
+            throw new NullPointerException("Null Collection!");
+        }
+
+        if(collection.isEmpty()) {
+            return false;
+        }
+
+        int pos = index;
+        T[] array = (T[]) collection.toArray();
+        for(final T el : array){
+            if(size >= this.innerArray.length){
+                grow();
+            }
+            add(pos++, el);
+            size++;
+        }
+
+        return true;
     }
 
     // Adds an element as the first element of this collection (optional operation).
     @Override
     public void addFirst(T element) {
-
+        add(0, element);
     }
 
     // Adds an element as the last element of this collection (optional operation).
     @Override
     public void addLast(T element) {
-
+        add(size, element);
     }
 
-    // TODO
+    // Removes all of the elements from this list.
     @Override
     public void clear() {
+        int sizeSaved = this.size;
+        this.size = 0;
 
+        for(int i = 0; i < sizeSaved; i++){
+            this.innerArray[i] = null;
+        }
     }
 
-    // TODO
+    // Returns a shallow copy of this ArrayList instance.
     @Override
     public Object clone() {
-        return null;
+        try {
+            ArrayListClass<T> clone = (ArrayListClass<T>) super.clone();
+            // now innerArray points on clone innerArray so we need to make shallow copy of if
+            clone.innerArray = Arrays.copyOf(this.innerArray, this.innerArray.length);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
+        }
     }
 
     // TODO
@@ -116,7 +154,7 @@ public class ArrayListClass<T> extends AbstractList<T>
     }
 
     // TODO
-    public void ensureCapacity(int minCapacity) {
+    public void ensureCapacity() {
 
     }
 
@@ -199,12 +237,6 @@ public class ArrayListClass<T> extends AbstractList<T>
 
     // TODO
     @Override
-    public boolean addAll(Collection<? extends T> c) {
-        return false;
-    }
-
-    // TODO
-    @Override
     public boolean removeAll(Collection<?> collection) {
         return false;
     }
@@ -272,12 +304,6 @@ public class ArrayListClass<T> extends AbstractList<T>
     @Override
     public <T1> T1[] toArray(T1[] array) {
         return null;
-    }
-
-    // TODO
-    @Override
-    public boolean add(T t) {
-        return false;
     }
 
     // TODO
