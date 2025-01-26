@@ -4,6 +4,7 @@ import java.util.*;
 import java.io.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import jdk.internal.util.ArraysSupport;
 
 public class ArrayListClass<T> extends AbstractList<T>
         implements RandomAccess, Cloneable, Serializable, Iterable<T>,
@@ -54,30 +55,43 @@ public class ArrayListClass<T> extends AbstractList<T>
         }
     }
 
-    // TODO
+    // Inserts the specified element at the specified position in this list.
     @Override
     public void add(int index, T element) {
+        if(index < 0 || index > size){
+            throw new IllegalArgumentException("Illegal index: " + index);
+        }
 
+        Object[] array = innerArray;
+        // if there is not enough capacity we inflate an array
+        // and in grow() method we modify innerArray and return it
+        // to assign the reference to array so we keep modifying innerArray
+        if(size == array.length){
+            array = grow();
+        }
+        System.arraycopy(array, index, array, index + 1, size - index);
+        array[index] = element;
+        size++;
     }
 
-    // TODO
+    // Appends the specified element to the end of this list.
     public boolean addAll(T element) {
         return false;
     }
 
-    // TODO
+    // Inserts all of the elements in the specified collection into this list, starting at the specified position.
     @Override
     public boolean addAll(int index, Collection<? extends T> elements) {
         return false;
     }
 
-    // TODO
+    // Adds an element as the first element of this collection (optional operation).
     @Override
     public void addFirst(T element) {
 
     }
 
-    // TODO
+    // Adds an element as the last element of this collection (optional operation).
     @Override
     public void addLast(T element) {
 
@@ -267,8 +281,24 @@ public class ArrayListClass<T> extends AbstractList<T>
     }
 
     // TODO
-    public void trimToSize() {
+    public void trimToSize() {}
 
+    private Object[] grow() {
+        return grow(size + 1);
+    }
+
+    private Object[] grow(int minCapacity) {
+        int oldCapacity = this.innerArray.length;
+        if(oldCapacity < minCapacity || this.innerArray != DEFAULT_CAPACITY_EMPTY_ARRAY){
+            int newCapacity = ArraysSupport.newLength(oldCapacity,
+                    minCapacity - oldCapacity, oldCapacity >> 1);
+            this.innerArray = Arrays.copyOf(this.innerArray, newCapacity);
+        }
+        else{
+            this.innerArray = new Object[Math.max(DEFAULT_CAPACITY, minCapacity)];
+        }
+
+        return this.innerArray;
     }
 
     // TODO : implement some other methods which i haven't covered for now
