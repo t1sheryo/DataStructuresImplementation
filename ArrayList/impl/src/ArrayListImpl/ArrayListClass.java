@@ -88,6 +88,7 @@ public class ArrayListClass<T> extends AbstractList<T>
     }
 
     // Inserts all of the elements in the specified collection into this list, starting at the specified position.
+    @SuppressWarnings("unchecked")
     @Override
     public boolean addAll(int index, Collection<? extends T> collection) {
         if(collection == null) {
@@ -147,10 +148,10 @@ public class ArrayListClass<T> extends AbstractList<T>
         }
     }
 
-    // TODO
+    // Returns true if this list contains the specified element.
     @Override
     public boolean contains(Object object) {
-        return false;
+        return !(indexOf(object) == -1);
     }
 
     // TODO
@@ -163,10 +164,15 @@ public class ArrayListClass<T> extends AbstractList<T>
 
     }
 
-    // TODO
+    // Returns the element at the specified position in this list.
+    @SuppressWarnings("unchecked")
     @Override
     public T get(int index) {
-        return null;
+        if(index < 0 || index >= size){
+            throw new IllegalArgumentException("Illegal index: " + index);
+        }
+
+        return (T) this.innerArray[index];
     }
 
     // TODO
@@ -184,7 +190,20 @@ public class ArrayListClass<T> extends AbstractList<T>
     // TODO
     @Override
     public int indexOf(Object object) {
-        return 0;
+        if(object == null){
+            for(int i = 0; i < size; i++){
+                if(this.innerArray[i] == null){
+                    return i;
+                }
+            }
+        }
+        else{
+            for(int i = 0; i < size; i++){
+                if(this.innerArray[i].equals(object)) return i;
+            }
+        }
+
+        return -1;
     }
 
     // TODO
@@ -199,10 +218,29 @@ public class ArrayListClass<T> extends AbstractList<T>
         return null;
     }
 
-    // TODO
+    // Returns the index of the last occurrence of the
+    // specified element in this list, or -1 if this list does not contain the element.
     @Override
     public int lastIndexOf(Object object) {
-        return 0;
+        int size = this.size;
+        int result = -1;
+
+        if(object == null){
+            for(int i = 0; i < size; i++){
+                if(this.innerArray[i] == null){
+                    result = i;
+                }
+            }
+        }
+        else{
+            for(int i = 0; i < size; i++){
+                if(this.innerArray[i] == null){
+                    result = i;
+                }
+            }
+        }
+
+        return result;
     }
 
     // TODO
@@ -276,10 +314,9 @@ public class ArrayListClass<T> extends AbstractList<T>
         return null;
     }
 
-    // TODO
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     // TODO
