@@ -23,6 +23,14 @@ public class ArrayListClass<T> extends AbstractList<T>
     private static final Object[] DEFAULT_CAPACITY_EMPTY_ARRAY = {};
     private int size;
 
+    // TODO: optimize methods by adding local variables
+    //  and avoiding extra memory jumps
+
+    // TODO: add modificationCount variable to
+    // keep track of modification(read more about it)
+
+    // TODO: try to implement thread safe version
+    // (read more about it and learn)
 
     // Constructs an empty list with an initial capacity of ten. In fact,
     // we initialize it with empty array for a while.
@@ -80,14 +88,14 @@ public class ArrayListClass<T> extends AbstractList<T>
         return true;
     }
 
-    // Appends all of the elements in the specified collection to the end of this list,
+    // Appends all the elements in the specified collection to the end of this list,
     // in the order that they are returned by the specified collection's Iterator.
     @Override
     public boolean addAll(Collection<? extends T> collection) {
         return addAll(this.size, collection);
     }
 
-    // Inserts all of the elements in the specified collection into this list, starting at the specified position.
+    // Inserts all the elements in the specified collection into this list, starting at the specified position.
     @SuppressWarnings("unchecked")
     @Override
     public boolean addAll(int index, Collection<? extends T> collection) {
@@ -124,7 +132,7 @@ public class ArrayListClass<T> extends AbstractList<T>
         add(size, element);
     }
 
-    // Removes all of the elements from this list.
+    // Removes all the elements from this list.
     @Override
     public void clear() {
         int sizeSaved = this.size;
@@ -154,14 +162,27 @@ public class ArrayListClass<T> extends AbstractList<T>
         return !(indexOf(object) == -1);
     }
 
-    // TODO
-    public void ensureCapacity() {
-
+    // Increases the capacity of this ArrayList instance, if necessary,
+    // to ensure that it can hold at least the number of
+    // elements specified by the minimum capacity argument.
+    public void ensureCapacity(int minCapacity) {
+        if(minCapacity > this.innerArray.length
+            && minCapacity > DEFAULT_CAPACITY
+            && !(this.innerArray == DEFAULT_CAPACITY_EMPTY_ARRAY)){
+            grow(minCapacity);
+        }
     }
 
-    // TODO
+    // Performs the given action for each element of the
+    // Iterable until all elements have been processed
+    // or the action throws an exception.
     public void forEach(Consumer<? super T> consumer) {
-
+        if(consumer == null){
+            throw new NullPointerException("Null Consumer!");
+        }
+        for(int i = 0; i < size; i++){
+            consumer.accept(get(i));
+        }
     }
 
     // Returns the element at the specified position in this list.
@@ -175,19 +196,29 @@ public class ArrayListClass<T> extends AbstractList<T>
         return (T) this.innerArray[index];
     }
 
-    // TODO
+    // Gets the first element of this collection.
+    @SuppressWarnings("unchecked")
     @Override
     public T getFirst() {
-        return null;
+        if(size == 0){
+            throw new NoSuchElementException("Empty List!");
+        }
+        return (T) this.innerArray[0];
     }
 
-    // TODO
+    // Gets the last element of this collection.
+    @SuppressWarnings("unchecked")
     @Override
     public T getLast() {
-        return null;
+        if(size == 0){
+            throw new NoSuchElementException("Empty List!");
+        }
+        return (T) this.innerArray[size - 1];
     }
 
-    // TODO
+    // Returns the index of the first occurrence of the specified element in this list,
+    // or -1 if this list does not contain the element. More formally,
+    // returns the lowest index i such that Objects.equals(o, get(i)), or -1 if there is no such index.
     @Override
     public int indexOf(Object object) {
         if(object == null){
@@ -206,10 +237,10 @@ public class ArrayListClass<T> extends AbstractList<T>
         return -1;
     }
 
-    // TODO
+    // Returns true if this list contains no elements.
     @Override
     public boolean isEmpty() {
-        return false;
+        return size == 0;
     }
 
     // TODO
@@ -255,15 +286,41 @@ public class ArrayListClass<T> extends AbstractList<T>
         return null;
     }
 
-    // TODO
+    // Removes the element at the specified position in this list.
+    // Shifts any subsequent elements to the left (subtracts one from their indices).
     @Override
     public T remove(int index) {
-        return null;
+        if(index < 0 || index >= size){
+            throw new IllegalArgumentException("Illegal index: " + index);
+        }
+        @SuppressWarnings("unchecked")
+        T returnedValue = (T) this.innerArray[index];
+        fastRemove(this.innerArray, index);
+        size--;
+        return returnedValue;
     }
 
-    // TODO
+    // Removes the first occurrence of the specified element from this list, if it is present.
+    // If the list does not contain the element, it is unchanged. More formally,
+    // removes the element with the lowest index i such that Objects.equals(o, get(i))
+    // (if such an element exists).
+    // Returns true if this list contained the specified element
+    // (or equivalently, if this list changed as a result of the call).
     @Override
     public boolean remove(Object object) {
+        if(object == null){
+            throw new NullPointerException("Null Object!");
+        }
+        if(size == 0){
+            throw new NoSuchElementException("Empty List!");
+        }
+        for(int i = 0; i < size; i++){
+            if(this.innerArray[i].equals(object)){
+                fastRemove(this.innerArray, i);
+                size--;
+                return true;
+            }
+        }
         return false;
     }
 
@@ -273,33 +330,70 @@ public class ArrayListClass<T> extends AbstractList<T>
         return false;
     }
 
-    // TODO
+    // Removes from this list all of its elements
+    // that are contained in the specified collection.
     @Override
     public boolean removeAll(Collection<?> collection) {
+        // TODO
         return false;
     }
 
-    // TODO
+    // Removes and returns the first element of this collection (optional operation).
     @Override
     public T removeFirst() {
-        return null;
+        if(size == 0){
+            throw new NoSuchElementException("Empty List!");
+        }
+        @SuppressWarnings("unchecked")
+        T returnedValue = (T) this.innerArray[0];
+        fastRemove(this.innerArray, 0);
+        size--;
+        return returnedValue;
     }
 
-    // TODO
+    // Removes all the elements of this collection that satisfy the given predicate (optional operation).
+    // Errors or runtime exceptions thrown during iteration or by the predicate are relayed to the caller.
     public boolean removeIf(Predicate<? super T> predicate) {
-        return false;
+        if(predicate == null){
+            throw new NullPointerException("Null Predicate!");
+        }
+        int countOfRemoved = 0;
+        for(int i = 0; i < size; i++){
+            if(predicate.test(get(i))){
+                fastRemove(this.innerArray, i);
+                countOfRemoved++;
+            }
+        }
+        size -= countOfRemoved;
+        return countOfRemoved > 0;
     }
 
-    // TODO
+    // Removes and returns the last element of this collection (optional operation).
     @Override
     public T removeLast() {
-        return null;
+        if(size == 0){
+            throw new NoSuchElementException("Empty List!");
+        }
+        @SuppressWarnings("unchecked")
+        T returnedValue = (T) this.innerArray[size - 1];
+        fastRemove(this.innerArray, size - 1);
+        size--;
+        return returnedValue;
     }
 
-    // TODO
+    // Removes from this list all the elements whose index is between fromIndex,
+    // inclusive, and toIndex, exclusive. Shifts any succeeding elements to the left
+    // (reduces their index). This call shortens the list by (toIndex - fromIndex) elements.
+    // (If toIndex==fromIndex, this operation has no effect.)
     @Override
     public void removeRange(int fromIndex, int toIndex) {
-
+        if(fromIndex < 0 || fromIndex > toIndex || fromIndex >= size){
+            throw new IllegalArgumentException("Illegal index!");
+        }
+        for(int i = fromIndex; i <= toIndex; i++){
+            fastRemove(this.innerArray, i);
+        }
+        size = size - (toIndex - fromIndex);
     }
 
     // TODO
@@ -308,10 +402,16 @@ public class ArrayListClass<T> extends AbstractList<T>
         return false;
     }
 
-    // TODO
+    // Replaces the element at the specified position in this list with the specified element.
     @Override
     public T set(int index, T element) {
-        return null;
+        if(index < 0 || index >= size){
+            throw new IllegalArgumentException("Illegal index: " + index);
+        }
+        @SuppressWarnings("unchecked")
+        T returnedValue = (T) this.innerArray[index];
+        this.innerArray[index] = element;
+        return returnedValue;
     }
 
     @Override
@@ -343,8 +443,14 @@ public class ArrayListClass<T> extends AbstractList<T>
         return null;
     }
 
-    // TODO
-    public void trimToSize() {}
+    // Trims the capacity of this ArrayList instance to be the list's current size.
+    // An application can use this operation to minimize the storage of an ArrayList instance.
+    public void trimToSize() {
+        if(size < this.innerArray.length){
+            this.innerArray = (size == 0) ?
+                    EMPTY_ARRAY : Arrays.copyOf(this.innerArray, size);
+        }
+    }
 
     private Object[] grow() {
         return grow(size + 1);
@@ -362,6 +468,14 @@ public class ArrayListClass<T> extends AbstractList<T>
         }
 
         return this.innerArray;
+    }
+
+    private void fastRemove(Object[] array, int index){
+        final int newSize = array.length - 1;
+        if(newSize > index){
+            System.arraycopy(array, index + 1, array, index, newSize - index);
+        }
+        array[newSize] = null;
     }
 
     // TODO : implement some other methods which i haven't covered for now
